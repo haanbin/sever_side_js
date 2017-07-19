@@ -1,14 +1,34 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-var app = express();
+const multer = require('multer');
+var _storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  }
+});
+var upload = multer({ storage:_storage });
 var fs = require('fs');
+var app = express();
+
 app.locals.pretty = true;
 
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use('/user', express.static('uploads'));
 
 app.set('views', './views_file');
 app.set('view engine', 'pug');
 
+app.get('/upload', (req, res)=>{
+  res.render('upload');
+});
+
+app.post('/upload', upload.single('userfile'), (req, res)=>{
+  console.log(req.file);
+  res.send('Uploaded : '+ req.file.filename);
+});
 
 app.get('/topic/new', (req, res)=>{
   res.render('new');
